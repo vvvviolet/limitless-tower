@@ -1,75 +1,106 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+cconst canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const loading = document.getElementById('loading');
 
-// 初始化场景
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xdddddd);
+// 画布尺寸设置
+const TILE_SIZE = 16;
+const SCALE = 2;
+canvas.width = 320 * SCALE;
+canvas.height = 180 * SCALE;
+ctx.imageSmoothingEnabled = false;
 
-// 初始化相机
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-camera.position.set(5, 5, 5);
+// 素材配置
+const ASSETS = {
+  grass: 'https://i.imgur.com/fvVZz7G.png',    // 草地
+  dirt: 'https://i.imgur.com/4JkXwEj.png',     // 土地
+  water: 'https://i.imgur.com/6KYzW3v.png',    // 水
+  character: 'https://i.imgur.com/1qYVxTy.png' // 角色
+};
 
-// 初始化渲染器
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+// 扩展后的地图数据 (0: 草地, 1: 土地, 2: 水)
+const mapData = [
+  [0,0,0,1,1,0,0,2,2,2,0,0,1,1,0,0,2,2,2,0],
+  [0,1,0,1,0,0,2,2,2,2,0,1,1,0,0,2,2,2,2,2],
+  [1,1,0,0,0,2,2,2,2,2,1,1,0,0,0,2,2,2,2,2],
+  [0,0,0,0,2,2,2,2,2,2,0,0,0,0,2,2,2,2,2,2],
+  // ... 更多行数据（保持数组长度一致）
+];
 
-// 添加灯光
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight.position.set(5, 5, 5);
-scene.add(directionalLight);
+// 游戏对象
+const game = {
+  loaded: false,
+  tiles: {},
+  character: null
+};
 
-// 加载模型
-const loader = new GLTFLoader();
-let model;
-
-loader.load(
-  '1blend.glb', // 确保路径正确
-  (gltf) => {
-    model = gltf.scene;
-    scene.add(model);
-
-    // 自动缩放模型到视野
-    const box = new THREE.Box3().setFromObject(model);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    camera.position.copy(center);
-    camera.position.z += maxDim * 1.5;
-    camera.lookAt(center);
-  },
-  (xhr) => {
-    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-  },
-  (error) => {
-    console.error('Error loading model:', error);
-  }
-);
-
-// 添加控制器
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-
-// 动画循环
-function animate() {
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
+// 预加载素材
+function loadAssets() {
+  return Promise.all(
+    Object.entries(ASSETS).map(([name, url]) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => {
+          game.tiles[name] = img;
+          loading.textContent = `Loading... ${Object.keys(game.tiles).length}/${Object.keys(ASSETS).length}`;
+          resolve();
+        };
+      });
+    })
+  );
 }
-animate();
 
-// 窗口自适应
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+// 绘制地图
+function drawMap() {
+  mapData.forEach((row, y) => {
+    row.forEach((tile, x) => {
+      let img;
+      switch(tile) {
+        case 0: img = game.tiles.grass; break;
+        case 1: img = game.tiles.dirt; break;
+        case 2: img = game.tiles.water; break;
+      }
+      
+      ctx.drawImage(
+        img,
+        x * TILE_SIZE * SCALE,
+        y * TILE_SIZE * SCALE,
+        TILE_SIZE * SCALE,
+        TILE_SIZE * SCALE
+      );
+    });
+  });
+}
+
+// 绘制角色
+function drawCharacter() {
+  if (!game.character) {
+    game.character = {
+      x: 5 * TILE_SIZE * SCALE,
+      y: 5 * TILE_SIZE * SCALE
+    };
+  }
+  
+  ctx.drawImage(
+    game.tiles.character,
+    game.character.x,
+    game.character.y,
+    TILE_SIZE * SCALE,
+    TILE_SIZE * SCALE
+  );
+}
+
+// 游戏循环
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawMap();
+  drawCharacter();
+  requestAnimationFrame(gameLoop);
+}
+
+// 初始化
+loadAssets().then(() => {
+  loading.style.display = 'none';
+  game.loaded = true;
+  gameLoop();
 });

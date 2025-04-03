@@ -1,13 +1,216 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
-  <head>
-    <meta charset="utf-8">
-    <title>My first three.js app</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>向上生长的树</title>
     <style>
-      body { margin: 0; }
+        :root {
+            --trunk-width: 60px;
+            --trunk-color: #654321;
+            --sky-color-1: #2196f3;
+            --sky-color-2: #7ddffc;
+            --branch-angle: 30;
+            --growth-step: 200px; /* 每次生长高度 */
+        }
+
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background: linear-gradient(to bottom, var(--sky-color-1) 0%, var(--sky-color-2) 100%);
+        }
+
+        .container {
+            position: relative;
+            min-height: 100vh;
+            padding-top: 100vh; /* 初始留白 */
+        }
+
+        /* 树干核心样式 */
+        .trunk-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: var(--trunk-width);
+            z-index: 1;
+        }
+
+        .trunk-body {
+            border-left: calc(var(--trunk-width)/2 solid transparent;
+            border-right: calc(var(--trunk-width)/2 solid transparent;
+            border-bottom: solid var(--trunk-color);
+        }
+
+        /* 树枝系统 */
+        .branch-container {
+            position: absolute;
+            left: 50%;
+            transform-origin: bottom;
+        }
+
+        .branch {
+            position: relative;
+            border-style: solid;
+            border-color: transparent;
+        }
+
+        .leaf-container {
+            position: absolute;
+            transform: translateX(-50%);
+        }
+
+        .leaf {
+            position: absolute;
+            width: 15px;
+            height: 30px;
+            background: hotpink;
+            border-radius: 50% 50% 0 0;
+            opacity: 0.7;
+            transform: translateX(-50%);
+        }
+
+        /* 加载提示 */
+        #loading {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: none;
+            z-index: 100;
+        }
+
+        /* 信息面板 */
+        .description-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+        }
     </style>
-  </head>
-  <body>
-    <script type="module" src="/main.js"></script>
-  </body>
+</head>
+<body>
+    <div id="loading">加载中...</div>
+    
+    <div class="description-container">
+        <div class="title">Growing Tree</div>
+        <div class="subtitle">scroll up to grow</div>
+    </div>
+
+    <div class="container" id="container">
+        <div class="trunk-container" id="main-trunk">
+            <div class="trunk-body" style="border-bottom-width: 100px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let isLoading = false;
+        let trunkHeight = 100; // 初始高度
+        const mainTrunk = document.getElementById('main-trunk');
+
+        // 随机数生成
+        const random = (min, max) => Math.random() * (max - min) + min;
+
+        // 创建树枝
+        function createBranch(parent, depth = 1) {
+            const branchContainer = document.createElement('div');
+            branchContainer.className = 'branch-container';
+            
+            // 动态样式
+            const angle = depth === 1 ? random(-30, 30) : random(-15, 15);
+            const position = random(5, 95);
+            const sizeRatio = [1, 0.6, 0.3][depth - 1];
+            
+            branchContainer.style.cssText = `
+                bottom: ${position}%;
+                transform: translateX(-50%) rotate(${angle}deg);
+                width: ${sizeRatio * 100}%;
+                height: ${sizeRatio * 50}%;
+            `;
+
+            // 创建分支本体
+            const branch = document.createElement('div');
+            branch.className = 'branch';
+            branch.style.borderBottom = `
+                ${sizeRatio * 20}px solid var(--trunk-color)
+            `;
+
+            // 递归创建子分支
+            if (depth < 3) {
+                const branchCount = depth === 1 ? 8 : 2;
+                for (let i = 0; i < branchCount; i++) {
+                    createBranch(branch, depth + 1);
+                }
+            } else {
+                // 添加叶子
+                const leafContainer = document.createElement('div');
+                leafContainer.className = 'leaf-container';
+                for (let i = 0; i < 25; i++) {
+                    const leaf = document.createElement('div');
+                    leaf.className = 'leaf';
+                    leaf.style.cssText = `
+                        left: ${random(5, 95)}%;
+                        bottom: ${random(5, 95)}%;
+                    `;
+                    leafContainer.appendChild(leaf);
+                }
+                branch.appendChild(leafContainer);
+            }
+
+            branchContainer.appendChild(branch);
+            parent.appendChild(branchContainer);
+        }
+
+        // 生长主树干
+        function growTree() {
+            if (isLoading) return;
+            isLoading = true;
+            document.getElementById('loading').style.display = 'block';
+
+            // 记录当前滚动位置
+            const beforeHeight = document.documentElement.scrollHeight;
+
+            // 模拟异步生长
+            setTimeout(() => {
+                // 增加树干高度
+                trunkHeight += 200;
+                mainTrunk.firstElementChild.style.borderBottomWidth = 
+                    `${trunkHeight}px`;
+
+                // 添加新分支
+                for (let i = 0; i < 3; i++) {
+                    createBranch(mainTrunk);
+                }
+
+                // 保持滚动位置
+                const afterHeight = document.documentElement.scrollHeight;
+                window.scrollTo(0, window.scrollY + (afterHeight - beforeHeight));
+
+                isLoading = false;
+                document.getElementById('loading').style.display = 'none';
+            }, 800);
+        }
+
+        // 滚动事件处理
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+            
+            // 检测向上滚动到顶部区域
+            if (currentScroll < 100 && currentScroll < lastScroll) {
+                growTree();
+            }
+            lastScroll = currentScroll;
+        });
+
+        // 初始分支
+        for (let i = 0; i < 5; i++) {
+            createBranch(mainTrunk);
+        }
+    </script>
+</body>
 </html>
