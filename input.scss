@@ -1,0 +1,274 @@
+$container-width: 90%;
+$trunk-width: 60px;
+$trunk-height: 75vh;
+$branch-width-radtio: 0.6;
+$branch-width-radtio-2: $branch-width-radtio * 0.85;
+$branch-width-radtio-3: $branch-width-radtio-2 * 0.25;
+$leaf-width: $trunk-width * 0.25;
+
+$trunk-color: #654321;
+$sky-color-1: #2196f3;
+$sky-color-2: #7ddffc;
+
+$branch-angle: 30;
+
+body {
+	overflow: hidden;
+}
+.container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(to bottom, $sky-color-1 0%, $sky-color-2 100%);
+}
+
+@function randomNum($min, $max) {
+	$rand: random();
+	$randomNum: $min + floor($rand * (($max - $min) + 1));
+	@return $randomNum;
+}
+
+.trunk-container {
+	width: $trunk-width;
+	height: $trunk-height;
+	.trunk {
+		border-right: $trunk-width/2 solid transparent;
+		border-bottom: $trunk-height solid $trunk-color;
+		border-left: $trunk-width/2 solid transparent;
+		.leaf {
+			width: $leaf-width;
+			height: $leaf-width * 2;
+		}
+	}
+}
+
+// TREE
+.trunk-container {
+	position: absolute;
+	left: 50%;
+	bottom: -1%;
+	transform: translateX(-50%);
+
+	.trunk {
+		.branch-container {
+			position: absolute;
+			left: 50%;
+			bottom: 0;
+			transform-origin: bottom;
+
+			.branch {
+				.leaf-container {
+					position: absolute;
+					left: 50%;
+					transform: translatex(-50%);
+
+					.leaf {
+						position: absolute;
+						left: 50%;
+						transform: translatex(-50%);
+						border-radius: 50%;
+						background: hotpink;
+						//box-shadow: 0 0 2em rgba(0, 0, 0, 0.05);
+						opacity: 0.65;
+					}
+				}
+			}
+		}
+
+		// BRANCH-CONTAIR-1
+		> .branch-container {
+			@for $i from 1 through 15 {
+				&:nth-child(#{$i}) {
+					$randomAltitude: randomNum(5, 95);
+					bottom: $randomAltitude * 1%;
+
+					$branch-width: $trunk-width *
+						$branch-width-radtio *
+						(100 - $randomAltitude) /
+						100;
+
+					$branch-height: $trunk-height *
+						$branch-width-radtio *
+						(100 - $randomAltitude) /
+						100 +
+						5;
+
+					width: $branch-width;
+					height: $branch-height;
+
+					$direction: randomNum(0, 1);
+					@if $direction == 0 {
+						transform: translatex(-50%) rotate((-$branch-angle + $i) * 1deg);
+					} @else {
+						transform: translatex(-50%) rotate(($branch-angle + $i) * 1deg);
+					}
+
+					// BRANCH-1
+					> .branch {
+						border-right: $branch-width/2 solid transparent;
+						border-bottom: $branch-height solid $trunk-color;
+						border-left: $branch-width/2 solid transparent;
+
+						> .branch-container {
+							@for $i from 1 through 8 {
+								&:nth-child(#{$i}) {
+									$randomAltitude: randomNum(5, 95);
+									bottom: $randomAltitude * 1%;
+
+									$branch-width-2: $branch-width *
+										$branch-width-radtio-2 *
+										(100 - $randomAltitude) /
+										100;
+
+									$branch-height-2: $branch-height *
+										$branch-width-radtio-2 *
+										(100 - $randomAltitude) /
+										100 +
+										5;
+
+									width: $branch-width-2;
+									height: $branch-height-2;
+
+									$direction: randomNum(0, 1);
+									@if $direction == 0 {
+										transform: translatex(-50%) rotate((-$branch-angle + $i) * 1deg);
+									} @else {
+										transform: translatex(-50%) rotate(($branch-angle + $i) * 1deg);
+									}
+
+									// BRANCH-2
+									> .branch {
+										border-right: $branch-width-2/2 solid transparent;
+										border-bottom: $branch-height-2 solid $trunk-color;
+										border-left: $branch-width-2/2 solid transparent;
+
+										> .branch-container {
+											@for $i from 1 through 2 {
+												&:nth-child(#{$i}) {
+													$randomAltitude: randomNum(5, 95);
+													bottom: $randomAltitude * 1%;
+
+													$branch-width-3: $branch-width-2 *
+														$branch-width-radtio-3 *
+														(100 - $randomAltitude) /
+														100;
+
+													$branch-height-3: $branch-height-2 *
+														$branch-width-radtio-3 *
+														(100 - $randomAltitude) /
+														100 +
+														5;
+
+													width: $branch-width-3;
+													height: $branch-height-3;
+
+													$direction: randomNum(0, 1);
+													@if $direction == 0 {
+														transform: translatex(-50%) rotate((-$branch-angle + $i) * 1deg);
+													} @else {
+														transform: translatex(-50%) rotate(($branch-angle + $i) * 1deg);
+													}
+
+													// BRANCH-3
+													> .branch {
+														border-right: $branch-width-3/2 solid transparent;
+														border-bottom: $branch-height-3 solid $trunk-color;
+														border-left: $branch-width-3/2 solid transparent;
+
+														// LEAF
+														.leaf-container {
+															width: $branch-height-3;
+															height: $branch-height-3;
+														}
+
+														@for $i from 1 through 25 {
+															.leaf:nth-child(#{$i}) {
+																$randomLeft: randomNum(15, 85);
+																$randomBottom: randomNum(15, 85);
+
+																left: $randomLeft * 1%;
+																bottom: $randomBottom * 1%;
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// DESCRIPTION (delete me if needed)
+.description-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 50%;
+	text-align: center;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	margin-top: 32px;
+	.title {
+		font-size: 26px;
+		font-weight: 400;
+		color: white;
+	}
+	.subtitle {
+		margin-top: 6px;
+		font-size: 18px;
+		font-weight: 400;
+		color: hotpink;
+	}
+}
+.author-container {
+	$width: 42px;
+	position: absolute;
+	width: 50%;
+	right: $width/2;
+	bottom: $width/2;
+	text-align: right;
+	.picture {
+		position: absolute;
+		right: 0;
+		top: -$width;
+		margin-top: -12px;
+		width: $width;
+		height: $width;
+		background-size: $width;
+		background-position: center;
+		background-repeat-style: "no-repeat";
+		background-image: url(https://assets.codepen.io/595576/internal/avatars/users/default.png?format=auto&version=1689877807&width=80&height=80);
+	}
+	.title {
+		font-size: 16px;
+		letter-spacing: 2px;
+		color: black;
+	}
+}
+#resizeBtn {
+	position: fixed;
+	top: 20px;
+	left: 20px;
+	padding: 10px 20px;
+	background: hotpink;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	z-index: 1000;
+	transition: all 0.3s;
+
+	&:hover {
+		background: #ff69b4;
+		transform: scale(1.2);
+	}
+}
