@@ -1,0 +1,117 @@
+   /* 遮罩层样式 */
+   .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* 弹出框容器 */
+.modal-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 500px;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+/* 弹出框头部 */
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 关闭按钮 */
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+/* 弹出框内容 */
+.modal-content {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* 弹出框底部 */
+.modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* 按钮样式 */
+.modal-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.modal-btn-primary {
+    background-color: #4285f4;
+    color: white;
+    border: none;
+}
+
+.modal-btn-primary:hover {
+    background-color: #3367d6;
+}
+
+.modal-btn-secondary {
+    background-color: #f1f1f1;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.modal-btn-secondary:hover {
+    background-color: #e5e5e5;
+}
+
+/* 显示时的动画效果 */
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-overlay.active .modal-container {
+    transform: translateY(0);
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+    .modal-container {
+        width: 95%;
+    }
+    .modal-footer {
+        flex-direction: column;
+    }
+    .modal-btn {
+        width: 100%;
+    }
+}
